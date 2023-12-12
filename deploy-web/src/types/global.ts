@@ -3,5 +3,6 @@ declare global {
   interface Window extends KeplrWindow {
     wallet: Keplr;
     leap: Keplr;
+    cosmos: Keplr;
   }
 }

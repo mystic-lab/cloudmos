@@ -31,6 +31,7 @@ type ContextType = {
   walletBalances: Balances;
   isLeapInstalled: boolean;
   isKeplrInstalled: boolean;
+  isMetamaskInstalled: boolean;
   isWalletConnected: boolean;
   isWalletLoaded: boolean;
   connectWallet: (walletSource: Wallets) => Promise<void>;
@@ -42,7 +43,8 @@ type ContextType = {
 
 export enum Wallets {
   KEPLR = "keplr",
-  LEAP = "leap"
+  LEAP = "leap",
+  METAMASK = "cosmos"
 }
 
 const WalletProviderContext = React.createContext<ContextType>({
@@ -51,6 +53,7 @@ const WalletProviderContext = React.createContext<ContextType>({
   walletBalances: null,
   isLeapInstalled: false,
   isKeplrInstalled: false,
+  isMetamaskInstalled: false,
   isWalletConnected: false,
   isWalletLoaded: false,
   connectWallet: null,
@@ -66,6 +69,7 @@ export const WalletProvider = ({ children }) => {
   const [walletBalances, setWalletBalances] = useState<Balances>(null);
   const [isKeplrInstalled, setIsKeplrInstalled] = useState<boolean>(false);
   const [isLeapInstalled, setIsLeapInstalled] = useState<boolean>(false);
+  const [isMetamaskInstalled, setIsMetamaskInstalled] = useState<boolean>(false);
   const [isWindowLoaded, setIsWindowLoaded] = useState<boolean>(false);
   const [isWalletLoaded, setIsWalletLoaded] = useState<boolean>(false);
   const [isBroadcastingTx, setIsBroadcastingTx] = useState<boolean>(false);
@@ -94,13 +98,18 @@ export const WalletProvider = ({ children }) => {
     isMounted.current = true;
 
     if (isWindowLoaded && isSettingsInit) {
-      if (!!window.keplr || !!window.leap) {
+      if (!!window.keplr || !!window.leap || !!window.cosmos) {
         if (!!window.keplr) {
           setIsKeplrInstalled(true);
         }
 
         if (!!window.leap) {
           setIsLeapInstalled(true);
+        }
+
+
+        if (!!window.cosmos) {
+          setIsMetamaskInstalled(true);
         }
 
         if (localStorage.getItem("wallet_autoconnect")) {
@@ -110,6 +119,8 @@ export const WalletProvider = ({ children }) => {
             window.wallet = window.keplr;
           } else if (storedWallet === Wallets.LEAP) {
             window.wallet = window.leap;
+          } else if (storedWallet === Wallets.METAMASK) {
+            window.wallet = window.cosmos;
           }
 
           window.wallet.defaultOptions = {
@@ -125,14 +136,17 @@ export const WalletProvider = ({ children }) => {
 
         const keplrOnKeystoreChange = () => onKeystoreChange(Wallets.KEPLR);
         const leapOnKeystoreChange = () => onKeystoreChange(Wallets.LEAP);
+        const metamaskOnKeystoreChange = () => onKeystoreChange(Wallets.METAMASK);
         window.addEventListener("keplr_keystorechange", keplrOnKeystoreChange);
         window.addEventListener("leap_keystorechange", leapOnKeystoreChange);
+        window.addEventListener("metamask_keystorechange", metamaskOnKeystoreChange);
 
         return () => {
           isMounted.current = false;
 
           window.removeEventListener("keplr_keystorechange", keplrOnKeystoreChange);
           window.removeEventListener("leap_keystorechange", leapOnKeystoreChange);
+          window.removeEventListener("metamask_keystorechange", metamaskOnKeystoreChange);
         };
       } else {
         setIsWalletLoaded(true);
@@ -424,6 +438,7 @@ export const WalletProvider = ({ children }) => {
         walletName,
         walletBalances,
         isKeplrInstalled,
+        isMetamaskInstalled,
         isLeapInstalled,
         isWalletConnected: !!walletName,
         isWalletLoaded,
