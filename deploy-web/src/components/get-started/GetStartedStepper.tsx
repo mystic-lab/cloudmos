@@ -52,7 +52,7 @@ type Props = {};
 export const GetStartedStepper: React.FunctionComponent<Props> = () => {
   const { classes } = useStyles();
   const [activeStep, setActiveStep] = useState(0);
-  const { isKeplrInstalled, isLeapInstalled, isWalletConnected, walletBalances, address, refreshBalances } = useWallet();
+  const { isKeplrInstalled, isLeapInstalled, isMetamaskInstalled, isWalletConnected, walletBalances, address, refreshBalances } = useWallet();
   const aktBalance = walletBalances ? uaktToAKT(walletBalances.uakt) : null;
   const usdcBalance = walletBalances ? udenomToDenom(walletBalances.usdc) : null;
 
@@ -112,14 +112,14 @@ export const GetStartedStepper: React.FunctionComponent<Props> = () => {
             </Box>
           </Box>
 
-          {!isKeplrInstalled && !isLeapInstalled && (
+          {!isKeplrInstalled && !isLeapInstalled && !isMetamaskInstalled && (
             <Box sx={{ display: "flex", alignItems: "center", margin: "1rem 0" }}>
               <CancelIcon color="error" sx={{ marginRight: ".5rem" }} />
               Wallet is not installed
             </Box>
           )}
 
-          {(isKeplrInstalled || isLeapInstalled) && (
+          {(isKeplrInstalled || isLeapInstalled || isMetamaskInstalled) && (
             <>
               <Box sx={{ display: "flex", alignItems: "center", margin: "1rem 0" }}>
                 <CheckIcon color="success" sx={{ marginRight: ".5rem" }} />

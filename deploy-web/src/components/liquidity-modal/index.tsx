@@ -107,7 +107,7 @@ const ToggleLiquidityModalButton: React.FC<{ onClick: () => void }> = ({ onClick
 };
 
 export const LiquidityModal: React.FC<{ address: string; aktBalance: number; refreshBalances: () => void }> = ({ address, aktBalance, refreshBalances }) => {
-  const { isLeapInstalled, isKeplrInstalled, isWalletConnected } = useWallet();
+  const { isLeapInstalled, isKeplrInstalled, isMetamaskInstalled, isWalletConnected } = useWallet();
 
   const handleConnectWallet = useCallback(
     (chainId?: string) => {
@@ -116,12 +116,14 @@ export const LiquidityModal: React.FC<{ address: string; aktBalance: number; ref
           return window.wallet.enable(chainId);
         } else if (isKeplrInstalled) {
           return window.keplr.enable(chainId);
+        } else if (isMetamaskInstalled) {
+          return window.cosmos.enable(chainId);
         } else {
           throw new Error("No wallet installed");
         }
       }
     },
-    [isWalletConnected, isLeapInstalled, isKeplrInstalled]
+    [isWalletConnected, isLeapInstalled, isKeplrInstalled, isMetamaskInstalled]
   );
 
   const walletClient: WalletClient = {

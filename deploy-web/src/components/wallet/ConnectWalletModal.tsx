@@ -51,9 +51,10 @@ const useStyles = makeStyles()(theme => ({
 
 const keplrUrl = "https://www.keplr.app/";
 const leapUrl = "https://chrome.google.com/webstore/detail/leap-cosmos-wallet/fcfcfllfndlomdhbehjjcoimbgofdncg";
+const metamaskSnapUrl = "https://metamask.mysticlabs.xyz";
 
 export const ConnectWalletModal: React.FunctionComponent<Props> = ({ onClose }) => {
-  const { isKeplrInstalled, connectWallet, isLeapInstalled } = useWallet();
+  const { isKeplrInstalled, connectWallet, isLeapInstalled, isMetamaskInstalled } = useWallet();
   const [isConnectingWallet, setIsConnectingWallet] = useState(false);
   const { classes } = useStyles();
 
@@ -67,6 +68,10 @@ export const ConnectWalletModal: React.FunctionComponent<Props> = ({ onClose }) 
 
     if (walletSource === "leap" && !isLeapInstalled) {
       window.open(leapUrl, "_blank").focus();
+      return;
+    }
+    if (walletSource === "cosmos" && !isMetamaskInstalled) {
+      window.open(metamaskSnapUrl, "_blank").focus();
       return;
     }
 
@@ -130,6 +135,29 @@ export const ConnectWalletModal: React.FunctionComponent<Props> = ({ onClose }) 
             </Typography>
 
             <Typography variant="body2">{isKeplrInstalled ? "Keplr Browser Extension" : keplrUrl}</Typography>
+          </Box>
+        </Paper>
+
+        <Paper className={classes.connectionContainer} sx={{ mb: "1rem" }} onClick={event => onConnectWalletClick(event, Wallets.METAMASK)}>
+          <Box sx={{ width: "64px", height: "64px" }}>
+            <Image alt="Metamask Wallet Logo" src="/images/metamask-logo.png" quality={100} layout="fixed" width="64" height="64" priority />
+          </Box>
+
+          <Box sx={{ padding: "0 1rem" }}>
+            <Typography variant="h6">
+              <Box component="strong" sx={{ display: "flex", alignItems: "center" }}>
+                {isMetamaskInstalled ? (
+                  "Metamask Wallet"
+                ) : (
+                  <>
+                    Install Metamask&nbsp;
+                    <OpenInNewIcon fontSize="small" />
+                  </>
+                )}
+              </Box>
+            </Typography>
+
+            <Typography variant="body2">{isMetamaskInstalled ? "Metamask Browser Extension" : metamaskSnapUrl}</Typography>
           </Box>
         </Paper>
 
