@@ -3,6 +3,7 @@ import { ChainProvider, useManager } from "@cosmos-kit/react";
 import { wallets as keplr } from "@cosmos-kit/keplr";
 import { wallets as leap } from "@cosmos-kit/leap-extension";
 import { wallets as cosmostation } from "@cosmos-kit/cosmostation-extension";
+import { wallets as metamask } from "@cosmos-kit/cosmos-extension-metamask";
 import { customRegistry } from "@src/utils/customRegistry";
 import { GasPrice } from "@cosmjs/stargate";
 import { akash, akashAssetList, akashSandbox, akashSandboxAssetList, akashTestnet, akashTestnetAssetList } from "@src/chains";
@@ -20,7 +21,7 @@ export function CustomChainProvider({ children }: Props) {
     <ChainProvider
       chains={[akash, akashSandbox, akashTestnet]}
       assetLists={[akashAssetList, akashSandboxAssetList, akashTestnetAssetList]}
-      wallets={[...keplr, ...leap, ...cosmostation]}
+      wallets={[...keplr, ...leap, ...cosmostation, ...metamask]}
       sessionOptions={{
         duration: 31_556_926_000, // 1 year
         callback: () => {
