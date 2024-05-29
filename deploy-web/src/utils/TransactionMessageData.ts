@@ -1,7 +1,6 @@
 import { networkVersion, networkVersionMarket } from "./constants";
 import { BidDto } from "@src/types/deployment";
 import { BasicAllowance, MsgGrantAllowance, MsgRevoke, MsgRevokeAllowance } from "./proto/grant";
-import { longify } from "@cosmjs/stargate/build/queryclient";
 import { protoTypes } from "./proto";
 import Long from "long";
 
@@ -221,7 +220,7 @@ export class TransactionMessageData {
           ],
           expiration: expiration
             ? {
-                seconds: longify(Math.floor(expiration.getTime() / 1_000)),
+                seconds: Long.fromValue(Math.floor(expiration.getTime() / 1_000)),
                 nanos: Math.floor((expiration.getTime() % 1_000) * 1_000_000)
               }
             : undefined
