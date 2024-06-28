@@ -22,7 +22,12 @@
     "indexer:dev": "turbo dev --filter=\"./apps/indexer\"",
     "format": "prettier --write ./*.{js,json} **/*.{ts,tsx,js,json}",
     "lint": "eslint .",
-    "lint:api": "eslint ./apps/api"
+    "lint:api": "eslint ./apps/api",
+    "postinstall": "npx patch-package"
+  },
+  "dependencies": {
+    "@cosmos-kit/cosmos-extension-metamask": "^0.9.1",
+    "patch-package": "^8.0.0"
   },
   "devDependencies": {
     "@akashnetwork/dev-config": "*",
