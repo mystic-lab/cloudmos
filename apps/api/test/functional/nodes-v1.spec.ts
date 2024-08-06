@@ -11,7 +11,7 @@ describe("Nodes API", () => {
   const interceptor = nock(env.NODE_API_BASE_PATH);
 
   beforeAll(async () => {
-    await initDb({ log: false });
+    await initDb();
   });
 
   afterAll(async () => {
@@ -26,7 +26,7 @@ describe("Nodes API", () => {
   describe("GET /nodes/*", () => {
     it.each(["mainnet", "sandbox", "testnet"])("should return %s node", async network => {
       const node = NodeSeeder.create();
-      interceptor.get(`/cloudmos/main/config/${network}-nodes.json`).times(1).reply(200, node);
+      interceptor.get(`/console/main/config/${network}-nodes.json`).times(1).reply(200, node);
 
       const resInit = await app.request(`v1/nodes/${network}`);
       expect(resInit.status).toBe(200);

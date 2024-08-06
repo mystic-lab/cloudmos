@@ -1,7 +1,4 @@
 import { NewDeploymentContainer } from "@src/components/new-deployment/NewDeploymentContainer";
+import { withSdlBuilder } from "@src/context/SdlBuilderProvider/SdlBuilderProvider";
 
-function NewDeploymentPage() {
-  return <NewDeploymentContainer />;
-}
-
-export default NewDeploymentPage;
+export default withSdlBuilder({ componentsSet: "ssh-toggled" })(NewDeploymentContainer);

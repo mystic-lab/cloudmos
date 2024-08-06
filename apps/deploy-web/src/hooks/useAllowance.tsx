@@ -1,4 +1,5 @@
 import React, { FC, useMemo } from "react";
+import { Snackbar } from "@akashnetwork/ui/components";
 import isAfter from "date-fns/isAfter";
 import parseISO from "date-fns/parseISO";
 import { OpenNewWindow } from "iconoir-react";
@@ -7,7 +8,6 @@ import Link from "next/link";
 import { useSnackbar } from "notistack";
 import { useLocalStorage } from "usehooks-ts";
 
-import { Snackbar } from "@src/components/shared/Snackbar";
 import { useWallet } from "@src/context/WalletProvider";
 import { useWhen } from "@src/hooks/useWhen";
 import { useAllowancesGranted } from "@src/queries/useGrantsQuery";
@@ -26,7 +26,7 @@ const AllowanceNotificationMessage: FC = () => (
 
 export const useAllowance = () => {
   const { address } = useWallet();
-  const [defaultFeeGranter, setDefaultFeeGranter] = useLocalStorage<string | undefined>("default-fee-granter", undefined);
+  const [defaultFeeGranter, setDefaultFeeGranter] = useLocalStorage<string | undefined>(`default-fee-granters/${address}`, undefined);
   const { data: allFeeGranters, isLoading, isFetched } = useAllowancesGranted(address);
   const { enqueueSnackbar } = useSnackbar();
 

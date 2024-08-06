@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Avatar, AvatarFallback, Card, CardContent, Spinner } from "@akashnetwork/ui/components";
+import { Avatar, AvatarFallback, Card, CardContent, Popup, Spinner } from "@akashnetwork/ui/components";
 import { CheckCircle, WarningCircle } from "iconoir-react";
 
 import { useChainParam } from "@src/context/ChainParamProvider";
@@ -8,7 +8,6 @@ import { useWallet } from "@src/context/WalletProvider";
 import { denomToUdenom } from "@src/utils/mathHelpers";
 import { aktToUakt } from "@src/utils/priceUtils";
 import { ConnectWallet } from "./ConnectWallet";
-import { Popup } from "./Popup";
 import { Title } from "./Title";
 
 type Props = {
@@ -19,7 +18,7 @@ type Props = {
 export const PrerequisiteList: React.FunctionComponent<Props> = ({ onClose, onContinue }) => {
   const [isLoadingPrerequisites, setIsLoadingPrerequisites] = useState(false);
   const [isBalanceValidated, setIsBalanceValidated] = useState<boolean | null>(null);
-  const { address, walletBalances, refreshBalances } = useWallet();
+  const { address, walletBalances, refreshBalances, isManaged } = useWallet();
   const { minDeposit } = useChainParam();
 
   useEffect(() => {
@@ -37,11 +36,15 @@ export const PrerequisiteList: React.FunctionComponent<Props> = ({ onClose, onCo
       }
     }
 
+    if (isManaged) {
+      onContinue();
+    }
+
     if (address && minDeposit.akt && minDeposit.usdc && !!walletBalances) {
       loadPrerequisites();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [address, walletBalances?.uakt, walletBalances?.usdc, minDeposit.akt, minDeposit.usdc]);
+  }, [address, walletBalances?.uakt, walletBalances?.usdc, minDeposit.akt, minDeposit.usdc, isManaged]);
 
   return (
     <Popup

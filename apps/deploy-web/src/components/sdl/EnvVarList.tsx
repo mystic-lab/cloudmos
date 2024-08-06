@@ -3,17 +3,19 @@ import { Dispatch, ReactNode, SetStateAction } from "react";
 import { CustomTooltip } from "@akashnetwork/ui/components";
 import { InfoCircle } from "iconoir-react";
 
-import { Service } from "@src/types";
+import { useSdlBuilder } from "@src/context/SdlBuilderProvider/SdlBuilderProvider";
+import { ServiceType } from "@src/types";
 import { FormPaper } from "./FormPaper";
 
 type Props = {
-  currentService: Service;
+  currentService: ServiceType;
   serviceIndex?: number;
   children?: ReactNode;
   setIsEditingEnv: Dispatch<SetStateAction<boolean | number>>;
 };
 
 export const EnvVarList: React.FunctionComponent<Props> = ({ currentService, setIsEditingEnv, serviceIndex }) => {
+  const { hasComponent } = useSdlBuilder();
   return (
     <FormPaper className="whitespace-break-spaces break-all">
       <div className="mb-2 flex items-center">
@@ -23,6 +25,13 @@ export const EnvVarList: React.FunctionComponent<Props> = ({ currentService, set
           title={
             <>
               A list of environment variables to expose to the running container.
+              {hasComponent("ssh") && (
+                <>
+                  <br />
+                  <br />
+                  Note: The SSH_PUBKEY environment variable is reserved and is going to be overridden by the value provided to the relevant field.
+                </>
+              )}
               <br />
               <br />
               <a href="https://akash.network/docs/getting-started/stack-definition-language/#services" target="_blank" rel="noopener">

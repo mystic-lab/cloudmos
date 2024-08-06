@@ -3,18 +3,20 @@ import { Dispatch, ReactNode, SetStateAction } from "react";
 import { CustomTooltip } from "@akashnetwork/ui/components";
 import { InfoCircle } from "iconoir-react";
 
-import { Service } from "@src/types";
+import { useSdlBuilder } from "@src/context/SdlBuilderProvider/SdlBuilderProvider";
+import { ServiceType } from "@src/types";
 import { cn } from "@src/utils/styleUtils";
 import { FormPaper } from "./FormPaper";
 
 type Props = {
-  currentService: Service;
+  currentService: ServiceType;
   serviceIndex?: number;
   children?: ReactNode;
   setIsEditingExpose: Dispatch<SetStateAction<boolean | number>>;
 };
 
 export const ExposeList: React.FunctionComponent<Props> = ({ currentService, setIsEditingExpose, serviceIndex }) => {
+  const { hasComponent } = useSdlBuilder();
   return (
     <FormPaper>
       <div className="mb-2 flex items-center">
@@ -24,6 +26,13 @@ export const ExposeList: React.FunctionComponent<Props> = ({ currentService, set
           title={
             <>
               Expose is a list of port settings describing what can connect to the service.
+              {hasComponent("ssh") && (
+                <>
+                  <br />
+                  <br />
+                  Note: Port 22 is reserved for SSH and is going to be exposed by default.
+                </>
+              )}
               <br />
               <br />
               <a href="https://akash.network/docs/getting-started/stack-definition-language/#servicesexpose" target="_blank" rel="noopener">

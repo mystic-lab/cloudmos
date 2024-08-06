@@ -2,14 +2,13 @@
 import React, { ReactNode, useEffect, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { IntlProvider } from "react-intl";
-import { Spinner } from "@akashnetwork/ui/components";
+import { ErrorFallback, Spinner } from "@akashnetwork/ui/components";
 import { useMediaQuery, useTheme as useMuiTheme } from "@mui/material";
 
 import { useSettings } from "@src/context/SettingsProvider";
 import { useWallet } from "@src/context/WalletProvider";
 import { accountBarHeight } from "@src/utils/constants";
 import { cn } from "@src/utils/styleUtils";
-import { ErrorFallback } from "../shared/ErrorFallback";
 import { LinearLoadingSkeleton } from "../shared/LinearLoadingSkeleton";
 import { Nav } from "./Nav";
 import { Sidebar } from "./Sidebar";
@@ -142,7 +141,7 @@ const LayoutApp: React.FunctionComponent<Props> = ({ children, isLoading, isUsin
   );
 };
 
-const Loading: React.FunctionComponent<{ text: string }> = ({ text }) => {
+export const Loading: React.FunctionComponent<{ text: string }> = ({ text }) => {
   return (
     <div className="flex h-full w-full flex-col items-center justify-center pb-12 pt-12">
       <div className="pb-4">

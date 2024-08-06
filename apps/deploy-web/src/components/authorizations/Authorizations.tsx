@@ -1,12 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Button, Spinner, Table, TableBody, TableHead, TableHeader, TableRow } from "@akashnetwork/ui/components";
+import { Address, Button, Popup, Spinner, Table, TableBody, TableHead, TableHeader, TableRow } from "@akashnetwork/ui/components";
 import { Bank } from "iconoir-react";
 import { NextSeo } from "next-seo";
 
-import { Address } from "@src/components/shared/Address";
 import { Fieldset } from "@src/components/shared/Fieldset";
-import { Popup } from "@src/components/shared/Popup";
 import { useWallet } from "@src/context/WalletProvider";
 import { useAllowance } from "@src/hooks/useAllowance";
 import { useAllowancesIssued, useGranteeGrants, useGranterGrants } from "@src/queries/useGrantsQuery";
@@ -15,6 +13,7 @@ import { averageBlockTime } from "@src/utils/priceUtils";
 import { TransactionMessageData } from "@src/utils/TransactionMessageData";
 import Layout from "../layout/Layout";
 import { SettingsLayout, SettingsTabs } from "../settings/SettingsLayout";
+import { ConnectWallet } from "../shared/ConnectWallet";
 import { Title } from "../shared/Title";
 import { AllowanceGrantedRow } from "./AllowanceGrantedRow";
 import { AllowanceIssuedRow } from "./AllowanceIssuedRow";
@@ -22,7 +21,6 @@ import { AllowanceModal } from "./AllowanceModal";
 import { GranteeRow } from "./GranteeRow";
 import { GranterRow } from "./GranterRow";
 import { GrantModal } from "./GrantModal";
-import { ConnectWallet } from "../shared/ConnectWallet";
 
 type RefreshingType = "granterGrants" | "granteeGrants" | "allowancesIssued" | "allowancesGranted" | null;
 const defaultRefetchInterval = 30 * 1000;

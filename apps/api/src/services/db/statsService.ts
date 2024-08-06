@@ -207,7 +207,13 @@ export const getProviderGraphData = async (dataName: ProviderStatsKey) => {
         `SELECT d."date", (SUM("activeCPU") + SUM("pendingCPU") + SUM("availableCPU")) AS "cpu", (SUM("activeGPU") + SUM("pendingGPU") + SUM("availableGPU")) AS "gpu", (SUM("activeMemory") + SUM("pendingMemory") + SUM("availableMemory")) AS memory, (SUM("activeStorage") + SUM("pendingStorage") + SUM("availableStorage")) as storage, COUNT(*) as count
          FROM "day" d
          INNER JOIN (
-            SELECT DISTINCT ON("hostUri",DATE("checkDate")) DATE("checkDate") AS date, ps."activeCPU", ps."pendingCPU", ps."availableCPU", ps."activeGPU", ps."pendingGPU", ps."availableGPU", ps."activeMemory", ps."pendingMemory", ps."availableMemory", ps."activeStorage", ps."pendingStorage", ps."availableStorage", ps."isOnline"
+            SELECT DISTINCT ON("hostUri",DATE("checkDate")) 
+              DATE("checkDate") AS date, 
+              ps."activeCPU", ps."pendingCPU", ps."availableCPU", 
+              ps."activeGPU", ps."pendingGPU", ps."availableGPU", 
+              ps."activeMemory", ps."pendingMemory", ps."availableMemory", 
+              ps."activeEphemeralStorage" + COALESCE(ps."activePersistentStorage", 0) AS "activeStorage", ps."pendingEphemeralStorage" + COALESCE(ps."pendingPersistentStorage", 0) AS "pendingStorage", ps."availableEphemeralStorage" + COALESCE(ps."availablePersistentStorage", 0) AS "availableStorage", 
+              ps."isOnline"
             FROM "providerSnapshot" ps
             INNER JOIN "provider" ON "provider"."owner"=ps."owner"
             WHERE ps."isLastSuccessOfDay" = TRUE AND ps."checkDate" >= DATE(ps."checkDate")::timestamp + INTERVAL '1 day' - (:grace_duration * INTERVAL '1 minutes')
@@ -272,7 +278,7 @@ export const getProviderGraphData = async (dataName: ProviderStatsKey) => {
 export const getProviderActiveLeasesGraphData = async (providerAddress: string) => {
   console.log("getProviderActiveLeasesGraphData");
 
-  const result: ProviderActiveLeasesStats[] = (await chainDb.query(
+  const result = await chainDb.query<ProviderActiveLeasesStats>(
     `SELECT "date" AS date, COUNT(l."id") AS count
     FROM "day" d
     LEFT JOIN "lease" l 
@@ -281,7 +287,7 @@ export const getProviderActiveLeasesGraphData = async (providerAddress: string) 
         AND (l."closedHeight" IS NULL OR l."closedHeight" > d."lastBlockHeightYet")
         AND (l."predictedClosedHeight" IS NULL OR l."predictedClosedHeight" > d."lastBlockHeightYet")
     INNER JOIN "provider" p
-        ON p."owner" = l."providerAddress"
+        ON p."owner" = :providerAddress
     WHERE d."lastBlockHeightYet" >= p."createdHeight"
     GROUP BY "date"
     ORDER BY "date" ASC`,
@@ -289,10 +295,27 @@ export const getProviderActiveLeasesGraphData = async (providerAddress: string) 
       type: QueryTypes.SELECT,
       replacements: { providerAddress: providerAddress }
     }
-  )) as ProviderActiveLeasesStats[];
+  );
 
-  const currentValue = result[result.length - 1] as ProviderActiveLeasesStats;
-  const compareValue = result[result.length - 2] as ProviderActiveLeasesStats;
+  if (result.length < 2) {
+    return {
+      currentValue: 0,
+      compareValue: 0,
+      snapshots: [] as {
+        date: string;
+        value: number;
+      }[],
+      now: {
+        count: 0
+      },
+      compare: {
+        count: 0
+      }
+    };
+  }
+
+  const currentValue = result[result.length - 1];
+  const compareValue = result[result.length - 2];
 
   return {
     currentValue: currentValue.count,

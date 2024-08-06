@@ -1,3 +1,5 @@
+import "react-modern-drawer/dist/index.css";
+
 import { useState } from "react";
 import Drawer from "react-modern-drawer";
 import { Button } from "@akashnetwork/ui/components";
@@ -8,8 +10,6 @@ import Link from "next/link";
 import { AkashConsoleDarkLogo, AkashConsoleLightLogo } from "../icons/AkashConsoleLogo";
 import { ModeToggle } from "../ModeToggle";
 import { NavLinks } from "../NavLinks";
-
-import "react-modern-drawer/dist/index.css";
 
 import useCookieTheme from "@/hooks/useTheme";
 
@@ -76,7 +76,7 @@ export function MobileNav() {
                 </Button>
               </Link>
 
-              <Link target="_blank" rel="noreferrer" href="https://github.com/akash-network/cloudmos" className="text-foreground">
+              <Link target="_blank" rel="noreferrer" href="https://github.com/akash-network/console" className="text-foreground">
                 <Button variant="ghost" size="icon">
                   <Github width="1.2rem" height="1.2rem" />
                   <span className="sr-only">GitHub</span>

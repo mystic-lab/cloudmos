@@ -1,6 +1,6 @@
 import { nanoid } from "nanoid";
 
-import { Service } from "@src/types";
+import { ProviderRegionValueType, ServiceType } from "@src/types";
 
 export const protoTypes = [
   { id: 1, name: "http" },
@@ -17,10 +17,11 @@ export const defaultHttpOptions = {
   nextTimeout: 60000
 };
 
-export const defaultService: Service = {
+export const defaultService: ServiceType = {
   id: nanoid(),
   title: "service-1",
   image: "",
+  sshPubKey: "",
   profile: {
     cpu: 0.1,
     gpu: 1,
@@ -76,7 +77,27 @@ export const defaultService: Service = {
   count: 1
 };
 
-export const defaultRentGpuService: Service = {
+export const SSH_VM_IMAGES = {
+  "Ubuntu 24.04": "ghcr.io/akash-network/ubuntu-2404-ssh:1",
+  "CentOS Stream 9": "ghcr.io/akash-network/centos-stream9-ssh:1",
+  "Debian 11": "ghcr.io/akash-network/debian-11-ssh:1",
+  "SuSE Leap 15.5": "ghcr.io/akash-network/opensuse-leap-155-ssh:1"
+};
+export const sshVmDistros: string[] = Object.keys(SSH_VM_IMAGES);
+export const sshVmImages: Set<string> = new Set(Object.values(SSH_VM_IMAGES));
+export const SSH_EXPOSE = {
+  port: 22,
+  as: 22,
+  global: true,
+  to: []
+};
+
+export const defaultSshVMService: ServiceType = {
+  ...defaultService,
+  expose: []
+};
+
+export const defaultRentGpuService: ServiceType = {
   id: nanoid(),
   title: "service-1",
   image: "",
@@ -135,7 +156,7 @@ export const defaultRentGpuService: Service = {
   count: 1
 };
 
-export const defaultAnyRegion = {
+export const defaultAnyRegion: ProviderRegionValueType = {
   key: "any",
   value: "any",
   description: "Any region"

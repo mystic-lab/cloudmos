@@ -8,7 +8,7 @@ import { queryClient } from "@src/queries";
 import { initiateNetworkData, networks } from "@src/store/networkStore";
 import { NodeStatus } from "@src/types/node";
 import { mainnetNodes } from "@src/utils/apiUtils";
-import { mainnetId } from "@src/utils/constants";
+import { defaultNetworkId } from "@src/utils/constants";
 import { initAppTypes } from "@src/utils/init";
 import { migrateLocalStorage } from "@src/utils/localStorage";
 
@@ -17,7 +17,7 @@ export type BlockchainNode = {
   rpc: string;
   status: string;
   latency: number;
-  nodeInfo: NodeStatus;
+  nodeInfo: NodeStatus | null;
   id: string;
 };
 
@@ -26,8 +26,8 @@ export type Settings = {
   rpcEndpoint: string;
   isCustomNode: boolean;
   nodes: Array<BlockchainNode>;
-  selectedNode: BlockchainNode | null;
-  customNode: BlockchainNode | null;
+  selectedNode: BlockchainNode | null | undefined;
+  customNode: BlockchainNode | null | undefined;
 };
 
 type ContextType = {
@@ -58,8 +58,8 @@ export const SettingsProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [isSettingsInit, setIsSettingsInit] = useState(false);
   const [isRefreshingNodeStatus, setIsRefreshingNodeStatus] = useState(false);
   const { getLocalStorageItem, setLocalStorageItem } = useLocalStorage();
-  const [selectedNetworkId, setSelectedNetworkId] = useState(mainnetId);
-  const { isCustomNode, customNode, nodes, apiEndpoint } = settings;
+  const [selectedNetworkId, setSelectedNetworkId] = useState(defaultNetworkId);
+  const { isCustomNode, customNode, nodes, apiEndpoint, rpcEndpoint } = settings;
 
   usePreviousRoute();
 
@@ -77,90 +77,74 @@ export const SettingsProvider: FC<{ children: ReactNode }> = ({ children }) => {
       // Init app types based on the selected network id
       initAppTypes();
 
-      const _selectedNetworkId = localStorage.getItem("selectedNetworkId") || mainnetId;
+      const _selectedNetworkId = localStorage.getItem("selectedNetworkId") || defaultNetworkId;
 
       setSelectedNetworkId(_selectedNetworkId);
 
       const settingsStr = getLocalStorageItem("settings");
-      const settings = { ...defaultSettings, ...JSON.parse(settingsStr || "{}") };
-      let defaultApiNode, defaultRpcNode, selectedNode;
+      const settings = { ...defaultSettings, ...JSON.parse(settingsStr || "{}") } as Settings;
 
       // Set the available nodes list and default endpoints
       const currentNetwork = networks.find(x => x.id === _selectedNetworkId);
       const response = await axios.get(currentNetwork?.nodesUrl || mainnetNodes);
-      let nodes = response.data;
-
-      const hasSettings =
-        settingsStr && settings.apiEndpoint && settings.rpcEndpoint && settings.selectedNode && nodes.find(x => x.id === settings.selectedNode.id);
-
-      // if user has settings locally
-      if (hasSettings) {
-        nodes = nodes.map(async node => {
-          const nodeStatus = await loadNodeStatus(node.api);
+      const nodes = response.data as Array<{ id: string; api: string; rpc: string }>;
+      const mappedNodes: Array<BlockchainNode> = await Promise.all(
+        nodes.map(async node => {
+          const nodeStatus = await loadNodeStatus(node.rpc);
 
           return {
             ...node,
             status: nodeStatus.status,
             latency: nodeStatus.latency,
             nodeInfo: nodeStatus.nodeInfo
-          };
-        });
+          } as BlockchainNode;
+        })
+      );
 
+      const hasSettings =
+        settingsStr && settings.apiEndpoint && settings.rpcEndpoint && settings.selectedNode && nodes?.find(x => x.id === settings.selectedNode?.id);
+      let defaultApiNode = hasSettings ?? settings.apiEndpoint;
+      let defaultRpcNode = hasSettings ?? settings.rpcEndpoint;
+      let selectedNode = hasSettings ?? settings.selectedNode;
+
+      // If the user has a custom node set, use it no matter the status
+      if (hasSettings && settings.isCustomNode) {
+        const nodeStatus = await loadNodeStatus(settings.rpcEndpoint);
+        const customNodeUrl = new URL(settings.apiEndpoint);
+
+        const customNode: Partial<BlockchainNode> = {
+          status: nodeStatus.status,
+          latency: nodeStatus.latency,
+          nodeInfo: nodeStatus.nodeInfo,
+          id: customNodeUrl.hostname
+        };
+
+        updateSettings({ ...settings, apiEndpoint: defaultApiNode, rpcEndpoint: defaultRpcNode, selectedNode, customNode, nodes: mappedNodes });
+      }
+
+      // If the user has no settings or the selected node is inactive, use the fastest available active node
+      if (!hasSettings || (hasSettings && settings.selectedNode?.status === "inactive")) {
+        const randomNode = getFastestNode(mappedNodes);
+        // Use cosmos.directory as a backup if there's no active nodes in the list
+        defaultApiNode = randomNode?.api || "https://rest.cosmos.directory/akash";
+        defaultRpcNode = randomNode?.rpc || "https://rpc.cosmos.directory/akash";
+        selectedNode = randomNode || {
+          api: defaultApiNode,
+          rpc: defaultRpcNode,
+          status: "active",
+          latency: 0,
+          nodeInfo: null,
+          id: "https://rest.cosmos.directory/akash"
+        };
+        updateSettings({ ...settings, apiEndpoint: defaultApiNode, rpcEndpoint: defaultRpcNode, selectedNode, nodes: mappedNodes });
+      } else {
         defaultApiNode = settings.apiEndpoint;
         defaultRpcNode = settings.rpcEndpoint;
         selectedNode = settings.selectedNode;
-
-        let customNode;
-
-        if (settings.isCustomNode) {
-          const nodeStatus = await loadNodeStatus(settings.apiEndpoint);
-          const customNodeUrl = new URL(settings.apiEndpoint);
-
-          customNode = {
-            status: nodeStatus.status,
-            latency: nodeStatus.latency,
-            nodeInfo: nodeStatus.nodeInfo,
-            id: customNodeUrl.hostname
-          };
-        }
-
-        updateSettings({ ...settings, apiEndpoint: defaultApiNode, rpcEndpoint: defaultRpcNode, selectedNode, customNode });
-        setIsLoadingSettings(false);
-
-        // update the node statuses asynchronously
-        nodes = await Promise.all(nodes);
-
-        updateSettings({ ...settings, nodes });
-      } else {
-        nodes = await Promise.all(
-          nodes.map(async node => {
-            const nodeStatus = await loadNodeStatus(node.api);
-
-            return {
-              ...node,
-              status: nodeStatus.status,
-              latency: nodeStatus.latency,
-              nodeInfo: nodeStatus.nodeInfo
-            };
-          })
-        );
-
-        // Set fastest one as default
-        const randomNode = getFastestNode(nodes);
-        defaultApiNode = randomNode.api;
-        defaultRpcNode = randomNode.rpc;
-        selectedNode = randomNode;
-
-        updateSettings({
-          ...settings,
-          apiEndpoint: defaultApiNode,
-          rpcEndpoint: defaultRpcNode,
-          selectedNode,
-          nodes
-        });
-        setIsLoadingSettings(false);
+        updateSettings({ ...settings, apiEndpoint: defaultApiNode, rpcEndpoint: defaultRpcNode, selectedNode, nodes: mappedNodes });
       }
 
+      setIsLoadingSettings(false);
       setIsSettingsInit(true);
     };
 
@@ -169,33 +153,31 @@ export const SettingsProvider: FC<{ children: ReactNode }> = ({ children }) => {
   }, []);
 
   /**
-   * Load the node status from node_info endpoint
-   * @param {*} nodeUrl
+   * Load the node status from status rpc endpoint
+   * @param {string} rpcUrl
    * @returns
    */
-  const loadNodeStatus = async nodeUrl => {
+  const loadNodeStatus = async (rpcUrl: string) => {
     const start = performance.now();
-    let latency,
-      status = "",
-      nodeInfo = {};
+    let status: "active" | "inactive" = "inactive";
+    let nodeStatus: NodeStatus | null = null;
 
     try {
-      const response = await axios.get(`${nodeUrl}/node_info`, { timeout: 10000 });
-      nodeInfo = response.data;
+      const response = await axios.get(`${rpcUrl}/status`, { timeout: 10000 });
+      nodeStatus = response.data.result as NodeStatus;
       status = "active";
     } catch (error) {
       status = "inactive";
-    } finally {
-      const end = performance.now();
-      latency = end - start;
-
-      // eslint-disable-next-line no-unsafe-finally
-      return {
-        latency,
-        status,
-        nodeInfo
-      };
     }
+
+    const end = performance.now();
+    const latency = end - start;
+
+    return {
+      latency,
+      status,
+      nodeInfo: nodeStatus
+    };
   };
 
   /**
@@ -203,10 +185,10 @@ export const SettingsProvider: FC<{ children: ReactNode }> = ({ children }) => {
    * @param {*} nodes
    * @returns
    */
-  const getFastestNode = nodes => {
-    const filteredNodes = nodes.filter(n => n.status === "active");
+  const getFastestNode = (nodes: Array<BlockchainNode>) => {
+    const filteredNodes = nodes.filter(n => n.status === "active" && n.nodeInfo?.sync_info.catching_up === false);
     let lowest = Number.POSITIVE_INFINITY,
-      fastestNode;
+      fastestNode: BlockchainNode | null = null;
 
     // No active node, return the first one
     if (filteredNodes.length === 0) {
@@ -247,7 +229,7 @@ export const SettingsProvider: FC<{ children: ReactNode }> = ({ children }) => {
    * @returns
    */
   const refreshNodeStatuses = useCallback(
-    async (settingsOverride?) => {
+    async (settingsOverride?: Settings) => {
       if (isRefreshingNodeStatus) return;
 
       setIsRefreshingNodeStatus(true);
@@ -255,21 +237,24 @@ export const SettingsProvider: FC<{ children: ReactNode }> = ({ children }) => {
       let _customNode = settingsOverride ? settingsOverride.customNode : customNode;
       const _isCustomNode = settingsOverride ? settingsOverride.isCustomNode : isCustomNode;
       const _apiEndpoint = settingsOverride ? settingsOverride.apiEndpoint : apiEndpoint;
+      const _rpcEndpoint = settingsOverride ? settingsOverride.rpcEndpoint : rpcEndpoint;
 
       if (_isCustomNode) {
-        const nodeStatus = await loadNodeStatus(_apiEndpoint);
+        const nodeStatus = await loadNodeStatus(_rpcEndpoint);
         const customNodeUrl = new URL(_apiEndpoint);
 
         _customNode = {
           status: nodeStatus.status,
           latency: nodeStatus.latency,
           nodeInfo: nodeStatus.nodeInfo,
-          id: customNodeUrl.hostname
+          id: customNodeUrl.hostname,
+          api: _apiEndpoint,
+          rpc: _rpcEndpoint
         };
       } else {
         _nodes = await Promise.all(
           _nodes.map(async node => {
-            const nodeStatus = await loadNodeStatus(node.api);
+            const nodeStatus = await loadNodeStatus(node.rpc);
 
             return {
               ...node,

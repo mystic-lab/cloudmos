@@ -1,3 +1,5 @@
+import "reflect-metadata";
+
 import { serve } from "@hono/node-server";
 // TODO: find out how to properly import this
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -6,7 +8,13 @@ import { sentry } from "@hono/sentry";
 import * as Sentry from "@sentry/node";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { container } from "tsyringe";
 
+import { AuthInterceptor } from "@src/auth/services/auth.interceptor";
+import { HonoErrorHandlerService } from "@src/core/services/hono-error-handler/hono-error-handler.service";
+import { HttpLoggerService } from "@src/core/services/http-logger/http-logger.service";
+import { LoggerService } from "@src/core/services/logger/logger.service";
+import { RequestContextInterceptor } from "@src/core/services/request-storage/request-context.interceptor";
 import packageJson from "../package.json";
 import { chainDb, syncUserSchema, userDb } from "./db/dbConnection";
 import { apiRouter } from "./routers/apiRouter";
@@ -28,7 +36,7 @@ appHono.use(
   })
 );
 
-const { PORT = 3080 } = process.env;
+const { PORT = 3080, BILLING_ENABLED } = process.env;
 
 Sentry.init({
   dsn: env.SentryDSN,
@@ -55,6 +63,9 @@ const scheduler = new Scheduler({
   }
 });
 
+appHono.use(container.resolve(HttpLoggerService).intercept());
+appHono.use(container.resolve(RequestContextInterceptor).intercept());
+appHono.use(container.resolve(AuthInterceptor).intercept());
 appHono.use(
   "*",
   sentry({
@@ -77,6 +88,19 @@ appHono.route("/web3-index", web3IndexRouter);
 appHono.route("/dashboard", dashboardRouter);
 appHono.route("/internal", internalRouter);
 
+// TODO: remove condition once billing is in prod
+if (BILLING_ENABLED === "true") {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { createWalletRouter, getWalletListRouter, signAndBroadcastTxRouter } = require("./billing");
+  appHono.route("/", createWalletRouter);
+  appHono.route("/", getWalletListRouter);
+  appHono.route("/", signAndBroadcastTxRouter);
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { createAnonymousUserRouter, getAnonymousUserRouter } = require("./user");
+  appHono.route("/", createAnonymousUserRouter);
+  appHono.route("/", getAnonymousUserRouter);
+}
+
 appHono.get("/status", c => {
   const version = packageJson.version;
   const tasksStatus = scheduler.getTasksStatus();
@@ -91,9 +115,13 @@ appHono.get("/status", c => {
   return c.json({ version, memory, tasks: tasksStatus });
 });
 
+appHono.onError(container.resolve(HonoErrorHandlerService).handle);
+
 function startScheduler() {
   scheduler.start();
 }
+
+const appLogger = new LoggerService({ context: "APP" });
 
 /**
  * Initialize database
@@ -105,15 +133,14 @@ export async function initApp() {
     await initDb();
     startScheduler();
 
-    console.log("Starting server at http://localhost:" + PORT);
+    appLogger.info({ event: "SERVER_STARTING", url: `http://localhost:${PORT}` });
     serve({
       fetch: appHono.fetch,
       port: typeof PORT === "string" ? parseInt(PORT) : PORT
     });
-  } catch (err) {
-    console.error("Error while initializing app", err);
-
-    Sentry.captureException(err);
+  } catch (error) {
+    appLogger.error({ event: "APP_INIT_ERROR", error });
+    Sentry.captureException(error);
   }
 }
 
@@ -123,20 +150,18 @@ export async function initApp() {
  * Create backups per version
  * Load from backup if exists for current version
  */
-export async function initDb(options: { log?: boolean } = { log: true }) {
-  const log = (value: string) => options?.log && console.log(value);
-
-  log(`Connecting to chain database (${chainDb.config.host}/${chainDb.config.database})...`);
+export async function initDb() {
+  appLogger.debug(`Connecting to chain database (${chainDb.config.host}/${chainDb.config.database})...`);
   await chainDb.authenticate();
-  log("Connection has been established successfully.");
+  appLogger.debug("Connection has been established successfully.");
 
-  log(`Connecting to user database (${userDb.config.host}/${userDb.config.database})...`);
+  appLogger.debug(`Connecting to user database (${userDb.config.host}/${userDb.config.database})...`);
   await userDb.authenticate();
-  log("Connection has been established successfully.");
+  appLogger.debug("Connection has been established successfully.");
 
-  log("Sync user schema...");
+  appLogger.debug("Sync user schema...");
   await syncUserSchema();
-  log("User schema synced.");
+  appLogger.debug("User schema synced.");
 }
 
 export { appHono as app };

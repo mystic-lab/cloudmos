@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { useAtomValue } from "jotai";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -16,7 +16,7 @@ import { ManifestEdit } from "./ManifestEdit";
 import { CustomizedSteppers } from "./Stepper";
 import { TemplateList } from "./TemplateList";
 
-export function NewDeploymentContainer() {
+export const NewDeploymentContainer: FC = () => {
   const { isLoading: isLoadingTemplates, templates } = useTemplates();
   const [activeStep, setActiveStep] = useState<number | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateCreation | null>(null);
@@ -35,11 +35,11 @@ export function NewDeploymentContainer() {
     const galleryTemplate = getGalleryTemplate();
 
     if (redeployTemplate) {
-      // If it's a redeploy, set the template from local storage
+      // If it's a redeployment, set the template from local storage
       setSelectedTemplate(redeployTemplate as TemplateCreation);
       setEditedManifest(redeployTemplate.content as string);
     } else if (galleryTemplate) {
-      // If it's a deploy from the template gallery, load from template data
+      // If it's a deployment from the template gallery, load from template data
       setSelectedTemplate(galleryTemplate as TemplateCreation);
       setEditedManifest(galleryTemplate.content as string);
     }
@@ -127,4 +127,4 @@ export function NewDeploymentContainer() {
       {activeStep === 2 && <CreateLease dseq={dseq as string} />}
     </Layout>
   );
-}
+};

@@ -15,7 +15,8 @@ import {
   ProviderSnapshot,
   ProviderSnapshotNode,
   ProviderSnapshotNodeCPU,
-  ProviderSnapshotNodeGPU
+  ProviderSnapshotNodeGPU,
+  ProviderSnapshotStorage
 } from "./dbSchemas/akash";
 import { Block, Message } from "./dbSchemas/base";
 dotenv.config({ path: ".env.local" });
@@ -58,7 +59,7 @@ export const chainDefinitions: { [key: string]: ChainDef } = {
     genesisFileUrl: "https://raw.githubusercontent.com/akash-network/net/master/mainnet/genesis.json",
     coinGeckoId: "akash-network",
     logoUrlSVG: "https://raw.githubusercontent.com/cosmos/chain-registry/master/akash/images/akt.svg",
-    logoUrlPNG: "https://cloudmos.io/images/chains/akash.png",
+    logoUrlPNG: "https://console.akash.network/images/chains/akash.png",
     customIndexers: ["AkashStatsIndexer"],
     bech32Prefix: "akash",
     denom: "akt",
@@ -79,7 +80,8 @@ export const chainDefinitions: { [key: string]: ChainDef } = {
       ProviderSnapshot,
       ProviderSnapshotNode,
       ProviderSnapshotNodeCPU,
-      ProviderSnapshotNodeGPU
+      ProviderSnapshotNodeGPU,
+      ProviderSnapshotStorage
     ]
   },
   akashTestnet: {
@@ -90,7 +92,7 @@ export const chainDefinitions: { [key: string]: ChainDef } = {
     genesisFileUrl: "https://raw.githubusercontent.com/akash-network/net/master/testnet-02/genesis.json",
     coinGeckoId: "akash-network",
     logoUrlSVG: "https://raw.githubusercontent.com/cosmos/chain-registry/master/akash/images/akt.svg",
-    logoUrlPNG: "https://cloudmos.io/images/chains/akash.png",
+    logoUrlPNG: "https://console.akash.network/images/chains/akash.png",
     customIndexers: ["AkashStatsIndexer"],
     bech32Prefix: "akash",
     denom: "akt",
@@ -111,7 +113,8 @@ export const chainDefinitions: { [key: string]: ChainDef } = {
       ProviderSnapshot,
       ProviderSnapshotNode,
       ProviderSnapshotNodeCPU,
-      ProviderSnapshotNodeGPU
+      ProviderSnapshotNodeGPU,
+      ProviderSnapshotStorage
     ]
   },
   akashSandbox: {
@@ -122,7 +125,7 @@ export const chainDefinitions: { [key: string]: ChainDef } = {
     genesisFileUrl: "https://raw.githubusercontent.com/akash-network/net/master/sandbox/genesis.json",
     coinGeckoId: "akash-network",
     logoUrlSVG: "https://raw.githubusercontent.com/cosmos/chain-registry/master/akash/images/akt.svg",
-    logoUrlPNG: "https://cloudmos.io/images/chains/akash.png",
+    logoUrlPNG: "https://console.akash.network/images/chains/akash.png",
     customIndexers: ["AkashStatsIndexer"],
     bech32Prefix: "akash",
     denom: "akt",
@@ -143,7 +146,8 @@ export const chainDefinitions: { [key: string]: ChainDef } = {
       ProviderSnapshot,
       ProviderSnapshotNode,
       ProviderSnapshotNodeCPU,
-      ProviderSnapshotNodeGPU
+      ProviderSnapshotNodeGPU,
+      ProviderSnapshotStorage
     ]
   },
   passage: {
@@ -184,7 +188,7 @@ export const chainDefinitions: { [key: string]: ChainDef } = {
     genesisFileUrl: "https://raw.githubusercontent.com/CosmosContracts/mainnet/main/juno-1/genesis.json",
     coinGeckoId: "juno-network",
     logoUrlSVG: "https://raw.githubusercontent.com/cosmos/chain-registry/master/juno/images/juno.svg",
-    logoUrlPNG: "https://cloudmos.io/images/chains/juno.png",
+    logoUrlPNG: "https://console.akash.network/images/chains/juno.png",
     customIndexers: [],
     bech32Prefix: "juno",
     denom: "juno",
@@ -217,7 +221,7 @@ export const chainDefinitions: { [key: string]: ChainDef } = {
     genesisFileUrl: "https://raw.githubusercontent.com/cosmos/mainnet/master/genesis/genesis.cosmoshub-4.json.gz",
     coinGeckoId: "cosmos",
     logoUrlSVG: "https://raw.githubusercontent.com/cosmos/chain-registry/master/cosmoshub/images/atom.svg",
-    logoUrlPNG: "https://cloudmos.io/images/chains/atom.png",
+    logoUrlPNG: "https://console.akash.network/images/chains/atom.png",
     customIndexers: [],
     bech32Prefix: "cosmos",
     denom: "atom",
@@ -244,7 +248,7 @@ export const chainDefinitions: { [key: string]: ChainDef } = {
     genesisFileUrl: "https://github.com/osmosis-labs/networks/blob/main/osmosis-1/genesis.json",
     coinGeckoId: "osmosis",
     logoUrlSVG: "https://raw.githubusercontent.com/cosmos/chain-registry/master/osmosis/images/osmo.svg",
-    logoUrlPNG: "https://cloudmos.io/images/chains/osmo.png",
+    logoUrlPNG: "https://console.akash.network/images/chains/osmo.png",
     customIndexers: [],
     bech32Prefix: "osmo",
     denom: "osmo",
@@ -267,7 +271,7 @@ export const chainDefinitions: { [key: string]: ChainDef } = {
     genesisFileUrl: "https://raw.githubusercontent.com/public-awesome/mainnet/main/stargaze-1/genesis.tar.gz",
     coinGeckoId: "stargaze",
     logoUrlSVG: "https://raw.githubusercontent.com/cosmos/chain-registry/master/stargaze/images/stars.png",
-    logoUrlPNG: "https://cloudmos.io/images/chains/stars.png",
+    logoUrlPNG: "https://console.akash.network/images/chains/stars.png",
     customIndexers: [],
     bech32Prefix: "stars",
     denom: "stars",
@@ -287,7 +291,7 @@ export const chainDefinitions: { [key: string]: ChainDef } = {
     genesisFileUrl: "https://raw.githubusercontent.com/enigmampc/SecretNetwork/master/secret-testnet-genesis.json",
     coinGeckoId: "secret",
     logoUrlSVG: "https://raw.githubusercontent.com/cosmos/chain-registry/master/secretnetwork/images/scrt.svg",
-    logoUrlPNG: "https://cloudmos.io/images/chains/scrt.png",
+    logoUrlPNG: "https://console.akash.network/images/chains/scrt.png",
     customIndexers: [],
     bech32Prefix: "secret",
     denom: "scrt",
@@ -317,7 +321,7 @@ export const chainDefinitions: { [key: string]: ChainDef } = {
     genesisFileUrl: "https://archive.evmos.org/mainnet/genesis.json",
     coinGeckoId: "evmos",
     logoUrlSVG: "https://raw.githubusercontent.com/cosmos/chain-registry/master/evmos/images/evmos.svg",
-    logoUrlPNG: "https://cloudmos.io/images/chains/evmos.png",
+    logoUrlPNG: "https://console.akash.network/images/chains/evmos.png",
     customIndexers: [],
     bech32Prefix: "evmos",
     denom: "evmos",
@@ -340,7 +344,7 @@ export const chainDefinitions: { [key: string]: ChainDef } = {
     genesisFileUrl: "https://raw.githubusercontent.com/ChihuahuaChain/chihuahua/main/mainnet/genesis.json",
     coinGeckoId: "chihuahua-chain",
     logoUrlSVG: "https://raw.githubusercontent.com/cosmos/chain-registry/master/chihuahua/images/huahua.svg",
-    logoUrlPNG: "https://cloudmos.io/images/chains/huahua.png",
+    logoUrlPNG: "https://console.akash.network/images/chains/huahua.png",
     customIndexers: [],
     bech32Prefix: "chihuahua",
     denom: "HUAHUA",
@@ -367,7 +371,7 @@ export const chainDefinitions: { [key: string]: ChainDef } = {
     genesisFileUrl: "https://raw.githubusercontent.com/Stride-Labs/testnet/main/mainnet/genesis.json",
     coinGeckoId: "stride",
     logoUrlSVG: "https://raw.githubusercontent.com/cosmos/chain-registry/master/stride/images/strd.svg",
-    logoUrlPNG: "https://cloudmos.io/images/chains/strd.png",
+    logoUrlPNG: "https://console.akash.network/images/chains/strd.png",
     customIndexers: [],
     bech32Prefix: "stride",
     denom: "STRD",
@@ -396,7 +400,7 @@ export const chainDefinitions: { [key: string]: ChainDef } = {
     genesisFileUrl: "https://raw.githubusercontent.com/Team-Kujira/networks/master/mainnet/kaiyo-1.json",
     coinGeckoId: "kujira",
     logoUrlSVG: "https://raw.githubusercontent.com/cosmos/chain-registry/master/kujira/images/kuji.png",
-    logoUrlPNG: "https://cloudmos.io/images/chains/kuji.png",
+    logoUrlPNG: "https://console.akash.network/images/chains/kuji.png",
     customIndexers: [],
     bech32Prefix: "kujira",
     denom: "KUJI",

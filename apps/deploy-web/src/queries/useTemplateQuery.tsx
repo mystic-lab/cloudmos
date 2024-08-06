@@ -1,9 +1,9 @@
 import { QueryKey, useMutation, useQuery, useQueryClient, UseQueryOptions } from "react-query";
+import { Snackbar } from "@akashnetwork/ui/components";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useSnackbar } from "notistack";
 
-import { Snackbar } from "@src/components/shared/Snackbar";
 import { useCustomUser } from "@src/hooks/useCustomUser";
 import { ITemplate } from "@src/types";
 import { ApiUrlService } from "@src/utils/apiUtils";
@@ -77,9 +77,11 @@ export function useDeleteTemplate(id: string) {
 
   return useMutation(() => axios.delete(`/api/proxy/user/deleteTemplate/${id}`), {
     onSuccess: () => {
-      queryClient.setQueryData(QueryKeys.getUserTemplatesKey(user?.username), (oldData: ITemplate[] = []) => {
-        return oldData.filter(t => t.id !== id);
-      });
+      if (user.username) {
+        queryClient.setQueryData(QueryKeys.getUserTemplatesKey(user?.username), (oldData: ITemplate[] = []) => {
+          return oldData.filter(t => t.id !== id);
+        });
+      }
     }
   });
 }

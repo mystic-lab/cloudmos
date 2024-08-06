@@ -10,6 +10,7 @@ import { LabelValue } from "@src/components/shared/LabelValue";
 import { useSelectedNetwork } from "@src/hooks/useSelectedNetwork";
 import Layout from "../layout/Layout";
 import { CertificateList } from "./CertificateList";
+import CloudmosImportPanel from "./CloudmosImportPanel";
 import { ColorModeSelect } from "./ColorModeSelect";
 import { SelectNetworkModal } from "./SelectNetworkModal";
 import { SettingsForm } from "./SettingsForm";
@@ -52,9 +53,11 @@ export const SettingsContainer: React.FunctionComponent = () => {
           </Fieldset>
         </div>
 
-        <Fieldset label="Certificates">
+        <Fieldset label="Certificates" className="mb-4">
           <CertificateList />
         </Fieldset>
+
+        <CloudmosImportPanel />
       </SettingsLayout>
     </Layout>
   );
